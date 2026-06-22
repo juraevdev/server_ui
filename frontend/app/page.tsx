@@ -18,6 +18,7 @@ function DashboardContent() {
   const [containers, setContainers] = useState<Container[]>([]);
   const [images, setImages] = useState<Image[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [loading, setLoading] = useState(true);
   const [dockerMode, setDockerMode] = useState<"host" | "isolated">("isolated");
 
   const load = useCallback(async () => {
