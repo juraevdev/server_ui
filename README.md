@@ -43,10 +43,11 @@ NEXT_PUBLIC_API_URL=http://127.0.0.1:8000/api
 
 ### Server requirements
 
-- Linux VPS (Ubuntu 22.04+ recommended)
-- Docker Engine installed
-- Docker Compose plugin (`docker compose`)
-- Port 80 open in firewall
+- Linux server (Kali Linux, Debian, Ubuntu, va hokazo)
+- Docker Engine + Docker Compose plugin
+- Mavjud :80 portdagi nginx ga faqat proxy qo'shiladi (band qilinmaydi)
+
+See `deploy/DEPLOY.md` (Kali Linux) and `deploy/SERVER_IT_ZONE.md`.
 
 ### Quick deploy
 

@@ -20,5 +20,6 @@ docker compose up -d --build
 echo ""
 echo "Deploy finished (isolated docker-panel stack)."
 echo "Host Docker containers are NOT managed by this panel."
-echo "Open: http://YOUR_SERVER_IP"
-echo "Health: http://YOUR_SERVER_IP/api/health/"
+echo "Panel listens on 127.0.0.1:${HTTP_PORT:-8080} (host port 80 is NOT used)."
+echo "Add deploy/host-nginx.server.it-zone.uz.conf to your existing nginx for the domain."
+echo "Test: curl http://127.0.0.1:${HTTP_PORT:-8080}/api/health/"

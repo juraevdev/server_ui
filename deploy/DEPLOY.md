@@ -1,89 +1,90 @@
-# Serverga deploy qo'llanmasi
+# Serverga deploy (Kali Linux / Debian)
 
 ## Xavfsizlik modeli
 
-Bu loyiha serverdagi **boshqa containerlarga tegmaydi**.
-
 - Host `/var/run/docker.sock` **ulanmaydi**
 - Alohida ichki Docker engine (`docker-engine`) ishlaydi
-- Panel faqat shu izolyatsiya qilingan muhitdagi containerlarni boshqaradi
-- Yaratilgan container nomlari avtomatik `panel-` prefiksi bilan boshlanadi
+- Panel faqat ichki muhitdagi `panel-` containerlarni boshqaradi
+- Host **:80** portni band qilmaydi — faqat `127.0.0.1:8080`
 
-```
-Server (host Docker — boshqa loyihalar)
-  └── docker-panel stack (alohida)
-        ├── docker-panel-engine   ← ichki Docker
-        ├── docker-panel-backend  ← faqat engine ga ulanadi
-        ├── docker-panel-frontend
-        └── docker-panel-nginx    ← tashqariga faqat 80-port
-```
-
-## 1. Server tayyorlash
-
-Ubuntu serverda:
+## 1. Kali Linux da Docker o'rnatish
 
 ```bash
 sudo apt update
-sudo apt install -y git docker.io docker-compose-plugin
+sudo apt install -y git docker.io docker-compose-plugin curl
+sudo systemctl enable docker --now
+```
+
+Root emas, oddiy user bilan ishlasangiz:
+
+```bash
 sudo usermod -aG docker $USER
 newgrp docker
 ```
 
-Firewall:
+Tekshirish:
 
 ```bash
-sudo ufw allow 80/tcp
-sudo ufw enable
+docker --version
+docker compose version
 ```
 
-## 2. Loyihani serverga olish
+## 2. Loyihani olish
 
 ```bash
 git clone <repo-url> server_ui
 cd server_ui
-```
-
-## 3. Sozlash
-
-```bash
-cp .env.example .env
+cp deploy/env.server.it-zone.uz.example .env
 nano .env
 ```
 
-```env
-DJANGO_SECRET_KEY=<uzun-random-kalit>
-DJANGO_DEBUG=false
-DJANGO_ALLOWED_HOSTS=123.45.67.89,yourdomain.com
-HTTP_PORT=80
-DOCKER_CONTAINER_PREFIX=panel-
+`DJANGO_SECRET_KEY` yarating:
+
+```bash
+python3 -c "import secrets; print(secrets.token_urlsafe(50))"
 ```
 
-## 4. Ishga tushirish
+## 3. Deploy
 
 ```bash
 chmod +x deploy/deploy.sh
 ./deploy/deploy.sh
 ```
 
-Brauzer: `http://SERVER_IP`
+Tekshirish:
 
-Tekshirish: `http://SERVER_IP/api/health/`
+```bash
+curl http://127.0.0.1:8080/api/health/
+```
 
-## 5. Container yaratish
+## 4. Domen (server.it-zone.uz)
 
-UI da nom yozsangiz: `my-nginx`
+Mavjud host nginx ga proxy qo'shing (nginx ni o'chirmang):
 
-Aslida ichkarida yaratiladi: `panel-my-nginx`
+```bash
+sudo cp deploy/host-nginx.server.it-zone.uz.conf /etc/nginx/sites-available/server.it-zone.uz
+sudo ln -sf /etc/nginx/sites-available/server.it-zone.uz /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl reload nginx
+```
 
-Bu containerlar **faqat panel ichki Docker** da ishlaydi, serverdagi boshqa containerlar xavfsiz.
+Brauzer: http://server.it-zone.uz
+
+## 5. Firewall (Kali)
+
+Kali da `ufw` bo'lmasligi mumkin. Band portlarga tegmang.
+
+Agar `ufw` o'rnatilgan bo'lsa:
+
+```bash
+sudo ufw status
+```
+
+Agar `iptables`/`nftables` ishlatsangiz — faqat kerakli qoidalarni qo'shing, mavjudlarni o'zgartirmang.
 
 ## 6. Image build
 
-Loyihani `host-builds/myapp/` ga qo'ying, UI da path:
-
-```
-/builds/myapp
-```
+Loyihani `host-builds/myapp/` ga qo'ying, UI da path: `/builds/myapp`
 
 ## 7. Yangilash
 
@@ -92,17 +93,13 @@ git pull
 docker compose up -d --build
 ```
 
-## Muhim eslatmalar
-
-1. **Port mapping** (`8081:80`) ichki Docker ichida ishlaydi — host server porti emas.
-2. **Auth yo'q** — panel URL ni himoya qiling (firewall/VPN).
-3. Stackni to'liq o'chirish: `docker compose down` (ichki containerlar ham o'chadi).
-4. Ichki Docker ma'lumotlari `docker_engine_data` volume da saqlanadi.
-
 ## Muammo bo'lsa
 
 ```bash
 docker compose ps
 docker compose logs docker-engine
 docker compose logs backend
+ss -tlnp | grep 8080
 ```
+
+Port band bo'lsa `.env` da `HTTP_PORT=8081` qiling.
