@@ -25,14 +25,11 @@ curl http://127.0.0.1:8080/api/dashboard/ | head -c 500
 
 `docker_mode` qiymati `host` bo'lishi kerak.
 
-## Xavfsizlik
+## Host rejimda boshqarish
 
-| Container | Ko'rinish | Start/Stop/Delete |
-|-----------|-----------|-------------------|
-| `zarbdor_driver-*` | Ha | Yo'q (read-only) |
-| `panel-*` | Ha | Ha |
+Barcha server containerlarida **Start / Stop / Restart / Delete** ishlaydi.
 
-Boshqa loyihalarga panel orqali zarar yetkazib bo'lmaydi.
+**Ehtiyot:** `zarbdor_driver` yoki `docker-panel-backend` ni o'chirsangiz, loyiha to'xtaydi.
 
 ## Isolated rejimga qaytish
 

@@ -99,54 +99,42 @@ function DashboardContent() {
                   <td>{container.image}</td>
                   <td className="status">{container.status}</td>
                   <td>
-                    {container.managed === false ? (
-                      <div className="btn-group">
-                        <Link
-                          className="btn"
-                          href={`/containers/${encodeURIComponent(container.id)}/logs`}
-                        >
-                          Logs
-                        </Link>
-                        <span className="hint">read-only</span>
-                      </div>
-                    ) : (
-                      <div className="btn-group">
-                        <button
-                          className="btn"
-                          type="button"
-                          onClick={() => handleContainerAction(container.id, "start")}
-                        >
-                          Start
-                        </button>
-                        <button
-                          className="btn"
-                          type="button"
-                          onClick={() => handleContainerAction(container.id, "stop")}
-                        >
-                          Stop
-                        </button>
-                        <button
-                          className="btn"
-                          type="button"
-                          onClick={() => handleContainerAction(container.id, "restart")}
-                        >
-                          Restart
-                        </button>
-                        <Link
-                          className="btn"
-                          href={`/containers/${encodeURIComponent(container.id)}/logs`}
-                        >
-                          Logs
-                        </Link>
-                        <button
-                          className="btn btn-danger"
-                          type="button"
-                          onClick={() => handleContainerAction(container.id, "delete")}
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    )}
+                    <div className="btn-group">
+                      <button
+                        className="btn"
+                        type="button"
+                        onClick={() => handleContainerAction(container.id, "start")}
+                      >
+                        Start
+                      </button>
+                      <button
+                        className="btn"
+                        type="button"
+                        onClick={() => handleContainerAction(container.id, "stop")}
+                      >
+                        Stop
+                      </button>
+                      <button
+                        className="btn"
+                        type="button"
+                        onClick={() => handleContainerAction(container.id, "restart")}
+                      >
+                        Restart
+                      </button>
+                      <Link
+                        className="btn"
+                        href={`/containers/${encodeURIComponent(container.id)}/logs`}
+                      >
+                        Logs
+                      </Link>
+                      <button
+                        className="btn btn-danger"
+                        type="button"
+                        onClick={() => handleContainerAction(container.id, "delete")}
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

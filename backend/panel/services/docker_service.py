@@ -43,14 +43,14 @@ def _is_managed(name: str) -> bool:
     return name.lstrip("/").startswith(CONTAINER_PREFIX)
 
 
-def _get_managed_container(container_id: str):
+def _get_container(container_id: str):
     client = _client()
     try:
         container = client.containers.get(container_id)
     except NotFound as exc:
         raise DockerServiceError(f"Container not found: {container_id}") from exc
 
-    if not _is_managed(container.name):
+    if not LIST_ALL_CONTAINERS and not _is_managed(container.name):
         raise DockerServiceError(
             "This container is outside Docker Panel scope and cannot be modified."
         )
@@ -77,7 +77,7 @@ def list_containers() -> list[dict[str, str]]:
             "name": container.name.lstrip("/"),
             "image": _image_label(container),
             "status": container.status,
-            "managed": _is_managed(container.name),
+            "managed": LIST_ALL_CONTAINERS or _is_managed(container.name),
         }
         for container in containers
         if LIST_ALL_CONTAINERS or _is_managed(container.name)
@@ -97,7 +97,7 @@ def restart_container(container_id: str) -> None:
 
 
 def remove_container(container_id: str) -> None:
-    container = _get_managed_container(container_id)
+    container = _get_container(container_id)
     try:
         container.remove(force=True)
     except APIError as exc:
@@ -105,14 +105,7 @@ def remove_container(container_id: str) -> None:
 
 
 def get_logs(container_id: str, tail: int = DEFAULT_LOG_TAIL) -> str:
-    if LIST_ALL_CONTAINERS:
-        client = _client()
-        try:
-            container = client.containers.get(container_id)
-        except NotFound as exc:
-            raise DockerServiceError(f"Container not found: {container_id}") from exc
-    else:
-        container = _get_managed_container(container_id)
+    container = _get_container(container_id)
     try:
         raw = container.logs(tail=tail, timestamps=True)
         return raw.decode("utf-8", errors="replace")
@@ -227,7 +220,7 @@ def remove_image(image_id: str) -> None:
 
 
 def _run_action(container_id: str, action: str) -> None:
-    container = _get_managed_container(container_id)
+    container = _get_container(container_id)
     try:
         getattr(container, action)()
     except APIError as exc:
