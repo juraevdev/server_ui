@@ -1,0 +1,77 @@
+name: docker-panel
+
+services:
+  # Isolated Docker engine — panel only manages containers inside here.
+  # Host server containers are NOT touched.
+  docker-engine:
+    image: docker:27-dind
+    container_name: docker-panel-engine
+    privileged: true
+    environment:
+      DOCKER_TLS_CERTDIR: ""
+    command:
+      - dockerd
+      - --host=tcp://0.0.0.0:2375
+      - --host=unix:///var/run/docker.sock
+    volumes:
+      - docker_engine_data:/var/lib/docker
+    networks:
+      - panel_internal
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "docker", "info"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+  backend:
+    build:
+      context: ./backend
+    container_name: docker-panel-backend
+    env_file:
+      - .env
+    environment:
+      DOCKER_HOST: tcp://docker-engine:2375
+      DOCKER_CONTAINER_PREFIX: panel-
+    volumes:
+      - backend_data:/app/data
+      - ./host-builds:/builds
+    networks:
+      - panel_internal
+    depends_on:
+      docker-engine:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: /api
+    container_name: docker-panel-frontend
+    networks:
+      - panel_internal
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: docker-panel-nginx
+    ports:
+      - "${HTTP_PORT:-80}:80"
+    volumes:
+      - ./deploy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - panel_internal
+    depends_on:
+      - backend
+      - frontend
+    restart: unless-stopped
+
+networks:
+  panel_internal:
+    name: docker-panel-net
+
+volumes:
+  backend_data:
+  docker_engine_data:
