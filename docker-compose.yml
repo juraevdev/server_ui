@@ -43,6 +43,16 @@ services:
       docker-engine:
         condition: service_healthy
     restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health/')\"",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
 
   frontend:
     build:
@@ -53,6 +63,12 @@ services:
     networks:
       - panel_internal
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/ >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 40s
 
   nginx:
     image: nginx:1.27-alpine
@@ -64,8 +80,10 @@ services:
     networks:
       - panel_internal
     depends_on:
-      - backend
-      - frontend
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
     restart: unless-stopped
 
 networks:
