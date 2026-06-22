@@ -27,6 +27,10 @@ ALLOWED_HOSTS = [
     if host.strip()
 ]
 
+for _internal_host in ("localhost", "127.0.0.1"):
+    if _internal_host not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(_internal_host)
+
 CORS_ALLOWED_ORIGINS = [
     origin.strip()
     for origin in os.environ.get("CORS_ALLOWED_ORIGINS", "").split(",")
