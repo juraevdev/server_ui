@@ -51,7 +51,14 @@ def dashboard(request):
     except DockerServiceError as exc:
         errors.append(str(exc))
 
-    return _json_ok({"containers": containers, "images": images, "errors": errors})
+    return _json_ok(
+        {
+            "containers": containers,
+            "images": images,
+            "errors": errors,
+            "docker_mode": "host" if docker_service.LIST_ALL_CONTAINERS else "isolated",
+        }
+    )
 
 
 @csrf_exempt

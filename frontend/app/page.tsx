@@ -18,7 +18,7 @@ function DashboardContent() {
   const [containers, setContainers] = useState<Container[]>([]);
   const [images, setImages] = useState<Image[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [dockerMode, setDockerMode] = useState<"host" | "isolated">("isolated");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -35,6 +35,7 @@ function DashboardContent() {
       setMessages(errors);
       setContainers(result.data?.containers || []);
       setImages(result.data?.images || []);
+      setDockerMode(result.data?.docker_mode || "isolated");
     }
     setLoading(false);
   }, []);
@@ -97,49 +98,65 @@ function DashboardContent() {
                   <td>{container.image}</td>
                   <td className="status">{container.status}</td>
                   <td>
-                    <div className="btn-group">
-                      <button
-                        className="btn"
-                        type="button"
-                        onClick={() => handleContainerAction(container.id, "start")}
-                      >
-                        Start
-                      </button>
-                      <button
-                        className="btn"
-                        type="button"
-                        onClick={() => handleContainerAction(container.id, "stop")}
-                      >
-                        Stop
-                      </button>
-                      <button
-                        className="btn"
-                        type="button"
-                        onClick={() => handleContainerAction(container.id, "restart")}
-                      >
-                        Restart
-                      </button>
-                      <Link
-                        className="btn"
-                        href={`/containers/${encodeURIComponent(container.id)}/logs`}
-                      >
-                        Logs
-                      </Link>
-                      <button
-                        className="btn btn-danger"
-                        type="button"
-                        onClick={() => handleContainerAction(container.id, "delete")}
-                      >
-                        Delete
-                      </button>
-                    </div>
+                    {container.managed === false ? (
+                      <div className="btn-group">
+                        <Link
+                          className="btn"
+                          href={`/containers/${encodeURIComponent(container.id)}/logs`}
+                        >
+                          Logs
+                        </Link>
+                        <span className="hint">read-only</span>
+                      </div>
+                    ) : (
+                      <div className="btn-group">
+                        <button
+                          className="btn"
+                          type="button"
+                          onClick={() => handleContainerAction(container.id, "start")}
+                        >
+                          Start
+                        </button>
+                        <button
+                          className="btn"
+                          type="button"
+                          onClick={() => handleContainerAction(container.id, "stop")}
+                        >
+                          Stop
+                        </button>
+                        <button
+                          className="btn"
+                          type="button"
+                          onClick={() => handleContainerAction(container.id, "restart")}
+                        >
+                          Restart
+                        </button>
+                        <Link
+                          className="btn"
+                          href={`/containers/${encodeURIComponent(container.id)}/logs`}
+                        >
+                          Logs
+                        </Link>
+                        <button
+                          className="btn btn-danger"
+                          type="button"
+                          onClick={() => handleContainerAction(container.id, "delete")}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         ) : (
-          <p className="empty">No containers found. Create one to get started.</p>
+          <p className="empty">
+            {dockerMode === "isolated"
+              ? "No containers in isolated Docker. Server containers (zarbdor_driver, etc.) are not shown in this mode. Use host mode or create a container here."
+              : "No containers found. Create one to get started."}
+          </p>
         )}
       </div>
 

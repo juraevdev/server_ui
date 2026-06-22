@@ -8,6 +8,11 @@ from docker.errors import APIError, BuildError, DockerException, ImageNotFound, 
 
 DEFAULT_LOG_TAIL = 200
 CONTAINER_PREFIX = os.environ.get("DOCKER_CONTAINER_PREFIX", "panel-")
+LIST_ALL_CONTAINERS = os.environ.get("DOCKER_LIST_ALL", "false").lower() in (
+    "1",
+    "true",
+    "yes",
+)
 
 
 class DockerServiceError(Exception):
@@ -72,9 +77,10 @@ def list_containers() -> list[dict[str, str]]:
             "name": container.name.lstrip("/"),
             "image": _image_label(container),
             "status": container.status,
+            "managed": _is_managed(container.name),
         }
         for container in containers
-        if _is_managed(container.name)
+        if LIST_ALL_CONTAINERS or _is_managed(container.name)
     ]
 
 
@@ -99,7 +105,14 @@ def remove_container(container_id: str) -> None:
 
 
 def get_logs(container_id: str, tail: int = DEFAULT_LOG_TAIL) -> str:
-    container = _get_managed_container(container_id)
+    if LIST_ALL_CONTAINERS:
+        client = _client()
+        try:
+            container = client.containers.get(container_id)
+        except NotFound as exc:
+            raise DockerServiceError(f"Container not found: {container_id}") from exc
+    else:
+        container = _get_managed_container(container_id)
     try:
         raw = container.logs(tail=tail, timestamps=True)
         return raw.decode("utf-8", errors="replace")

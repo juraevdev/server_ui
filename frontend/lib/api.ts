@@ -5,6 +5,7 @@ export type Container = {
   name: string;
   image: string;
   status: string;
+  managed?: boolean;
 };
 
 export type Image = {
@@ -40,6 +41,7 @@ export async function fetchDashboard() {
     containers: Container[];
     images: Image[];
     errors: string[];
+    docker_mode?: "host" | "isolated";
   }>("/dashboard/");
 }
 

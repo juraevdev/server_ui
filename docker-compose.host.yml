@@ -1,0 +1,19 @@
+# Host Docker mode — shows ALL server containers (read-only for non-panel-*).
+# zarbdor_driver and other host containers become visible.
+#
+# Usage on server:
+#   docker compose stop docker-engine
+#   docker compose -f docker-compose.yml -f docker-compose.host.yml up -d --build
+#
+# Safer: only panel-* containers can be started/stopped/deleted.
+
+services:
+  backend:
+    environment:
+      DOCKER_HOST: unix:///var/run/docker.sock
+      DOCKER_LIST_ALL: "true"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - backend_data:/app/data
+      - ./host-builds:/builds
+    depends_on: !reset []

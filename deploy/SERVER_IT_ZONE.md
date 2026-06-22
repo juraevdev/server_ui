@@ -55,7 +55,8 @@ sudo systemctl reload nginx
 
 ## 6. Ochish
 
-- http://server.it-zone.uz
+- http://server.it-zone.uz (hozirgi holat)
+- HTTPS uchun: `deploy/HTTPS.md`
 
 ## Port band bo'lsa
 
