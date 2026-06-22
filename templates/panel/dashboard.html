@@ -1,0 +1,89 @@
+{% extends "panel/base.html" %}
+
+{% block title %}Dashboard · Docker Panel{% endblock %}
+{% block heading %}Dashboard{% endblock %}
+
+{% block content %}
+<h2 class="section-title">Containers</h2>
+<div class="card">
+  {% if containers %}
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Image</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for container in containers %}
+      <tr>
+        <td><code>{{ container.id }}</code></td>
+        <td>{{ container.name }}</td>
+        <td>{{ container.image }}</td>
+        <td class="status">{{ container.status }}</td>
+        <td>
+          <div class="btn-group">
+            <form method="post" action="{% url 'panel:action' container.id 'start' %}">
+              {% csrf_token %}
+              <button class="btn" type="submit">Start</button>
+            </form>
+            <form method="post" action="{% url 'panel:action' container.id 'stop' %}">
+              {% csrf_token %}
+              <button class="btn" type="submit">Stop</button>
+            </form>
+            <form method="post" action="{% url 'panel:action' container.id 'restart' %}">
+              {% csrf_token %}
+              <button class="btn" type="submit">Restart</button>
+            </form>
+            <a class="btn" href="{% url 'panel:logs' container.id %}">Logs</a>
+            <form method="post" action="{% url 'panel:action' container.id 'delete' %}">
+              {% csrf_token %}
+              <button class="btn btn-danger" type="submit">Delete</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="empty">No containers found. Create one to get started.</p>
+  {% endif %}
+</div>
+
+<h2 class="section-title">Images</h2>
+<div class="card">
+  {% if images %}
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Tags</th>
+        <th>Size</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for image in images %}
+      <tr>
+        <td><code>{{ image.id }}</code></td>
+        <td>{{ image.tags }}</td>
+        <td>{{ image.size }}</td>
+        <td>
+          <form method="post" action="{% url 'panel:image_action' image.id 'delete' %}">
+            {% csrf_token %}
+            <button class="btn btn-danger" type="submit">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="empty">No images found. Pull or build one to get started.</p>
+  {% endif %}
+</div>
+{% endblock %}
