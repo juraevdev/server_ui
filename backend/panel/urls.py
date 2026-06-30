@@ -5,23 +5,23 @@ from panel import views
 app_name = "panel"
 
 urlpatterns = [
-    path("health/", views.health, name="health"),
-    path("dashboard/", views.dashboard, name="dashboard"),
-    path("containers/", views.create_container, name="create_container"),
+    path("health/", views.HealthView.as_view(), name="health"),
+    path("dashboard/", views.DashboardView.as_view(), name="dashboard"),
+    path("containers/", views.CreateContainerView.as_view(), name="create_container"),
     path(
         "containers/<str:container_id>/logs/",
-        views.container_logs,
+        views.ContainerLogsView.as_view(),
         name="container_logs",
     ),
     path(
         "containers/<str:container_id>/<str:action>/",
-        views.container_action,
+        views.ContainerActionView.as_view(),
         name="container_action",
     ),
-    path("images/", views.create_image, name="create_image"),
+    path("images/", views.CreateImageView.as_view(), name="create_image"),
     path(
         "images/<str:image_id>/<str:action>/",
-        views.image_action,
+        views.ImageActionView.as_view(),
         name="image_action",
     ),
 ]
